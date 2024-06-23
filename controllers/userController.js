@@ -24,13 +24,13 @@ exports.registerUser = async (req, res) => {
     }
 
     // const hashedPassword = await bcrypt.hash(password, 10);
-
+    console.log("userData", email, password);
     const user = new User({ email, password: password });
     await user.save();
 
     res.status(201).json({
       data: user,
-      userRoles: userRole,
+      // userRoles: userRole,
       message: "User registered successfully.",
     });
   } catch (error) {
@@ -43,6 +43,8 @@ exports.loginUser = async (req, res) => {
   try {
     const { email, password } = req.body;
     const user = await User.findOne({ email });
+
+    console.log(email);
 
     if (!user) {
       return res.status(401).json({ message: "Invalid email or password." });
