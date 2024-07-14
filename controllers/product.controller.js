@@ -59,7 +59,6 @@ exports.getAllProduct = async (req, res, next) => {
     }
 
     if (isBestSelling) {
-      console.log(isBestSelling, "isBestSelling");
       query.isBestSelling = isBestSelling;
     }
     if (isNewArrivals) {
@@ -98,8 +97,6 @@ exports.getAllProduct = async (req, res, next) => {
       sortOption.name = -1;
     }
 
-    console.log(sortOption, "sortOption");
-
     const products = await Product.find(query)
       .populate("category")
       .populate("subCategory")
@@ -124,9 +121,9 @@ exports.getAllProduct = async (req, res, next) => {
 // };
 
 exports.deleteProduct = async (req, res, next) => {
-  console.log(req.params.productId, "req params id");
+  console.log("delete called");
   try {
-    const deleteProductData = await Product.findByIdAndRemove(
+    const deleteProductData = await Product.findByIdAndDelete(
       req.params.productId
     );
     // console.log(deleteProductData, "deleteproduct data");
@@ -144,13 +141,11 @@ exports.deleteProductImages = async (req, res, next) => {
   console.log(req.params, "req.params");
   // const { productId, imroageId } = req.params;
   const { productId, imroageId } = req.params;
-  console.log(productId, imroageId, "id hai ta ");
 
   try {
     // Find the product by ID
 
     const product = await Product.findOne({ _id: productId });
-    console.log(product, "rpoductsssss");
 
     if (!product) {
       return res.status(404).json({ error: "Product not found" });
@@ -158,7 +153,6 @@ exports.deleteProductImages = async (req, res, next) => {
 
     // Find the image within the product's images array by its ID
     const imageIndex = product.image.findIndex((img) => img._id == imroageId);
-    console.log(imageIndex, "imageindex");
 
     if (imageIndex === -1) {
       return res.status(404).json({ error: "Image not found in the product" });
@@ -166,7 +160,6 @@ exports.deleteProductImages = async (req, res, next) => {
 
     // Remove the image from the product's images array
     const deletedImage = product.image.splice(imageIndex, 1)[0];
-    console.log(deletedImage, "DeletedImage");
 
     // Save the modified product to update the images array in the database
     await product.save();
@@ -188,31 +181,30 @@ exports.updateProduct = async (req, res, next) => {
     const urls = [];
     let videoUrl;
 
-    await Promise.all(
-      req.files.image.map(async (item, index) => {
-        const { path } = item;
-        const newPath = await cloudinary.uploader.upload(
-          path,
-          { resource_type: "auto" } // Assuming you want to auto-detect resource type
-        );
+    // await Promise.all(
+    //   req.files.image.map(async (item, index) => {
+    //     const { path } = item;
+    //     const newPath = await cloudinary.uploader.upload(
+    //       path,
+    //       { resource_type: "auto" } // Assuming you want to auto-detect resource type
+    //     );
 
-        console.log(newPath, "results");
-        urls.push({ url: newPath.secure_url });
-      })
-    );
+    //     urls.push({ url: newPath.secure_url });
+    //   })
+    // );
 
-    if (req.files.video) {
-      const oldPath = await cloudinary.uploader.upload(
-        req.files.video[0].path,
-        // { public_id: "" },
-        { resource_type: "auto" },
-        function (error, result) {
-          if (result) {
-            videoUrl = result.secure_url;
-          }
-        }
-      );
-    }
+    // if (req.files.video) {
+    //   const oldPath = await cloudinary.uploader.upload(
+    //     req.files.video[0].path,
+    //     // { public_id: "" },
+    //     { resource_type: "auto" },
+    //     function (error, result) {
+    //       if (result) {
+    //         videoUrl = result.secure_url;
+    //       }
+    //     }
+    //   );
+    // }
 
     // console.log(urls, videoUrl, "image and video url");
 
@@ -223,12 +215,9 @@ exports.updateProduct = async (req, res, next) => {
     }
 
     // Append the new images to the existing ones
-    let newImages = product.image;
-    console.log(urls, "urls");
-    console.log(newImages, "newImages");
+    // let newImages = product.image;
 
-    let updatedData = [...newImages, ...urls];
-    console.log(updatedData, "updatedData");
+    // let updatedData = [...newImages, ...urls];
 
     // Save the updated product to the database
     // await product.save();
@@ -238,8 +227,8 @@ exports.updateProduct = async (req, res, next) => {
       {
         name: req.body.name,
         price: req.body.price,
-        image: [...newImages, ...urls],
-        video: videoUrl,
+        image: req.body.productVariants,
+        video: req.files[0].filename,
         originalPrice: req.body.originalPrice,
         discountedPrice: req.body.discountedPrice,
         category: req.body.category,
@@ -253,7 +242,7 @@ exports.updateProduct = async (req, res, next) => {
         new: true,
       }
     );
-    console.log(updatedProductData, "udpated Product data");
+
     res.status(201).json({
       message: "success fully udpated Product",
       data: updatedProductData,
@@ -291,8 +280,6 @@ exports.productListByCategory = async (req, res, next) => {
       category: categoryId,
     });
 
-    console.log(productListByCategory, "rpoduct list by category");
-
     if (!productListByCategory) {
       return res
         .status(404)
@@ -309,10 +296,8 @@ exports.productListByCategory = async (req, res, next) => {
 };
 
 exports.CreateProductImage = async (req, res, next) => {
-  console.log("hitted prodcut images", req.files);
-
   const remappedImages = req?.files?.map((file) => file.filename);
-  console.log(remappedImages, "remappedImages hai ta");
+
   try {
     const ProductImages = new ProductImage({
       colorName: req.body.colorName,
@@ -322,7 +307,7 @@ exports.CreateProductImage = async (req, res, next) => {
     // Save the banner
 
     const datas = await ProductImages.save();
-    console.log(datas, "datas");
+
     res.status(201).json({
       message: "successfully created productImage",
       data: datas,
@@ -331,16 +316,13 @@ exports.CreateProductImage = async (req, res, next) => {
 };
 
 exports.deleteProductColorVariantImages = async (req, res, next) => {
-  console.log(req.params, "req.params");
   // const { productId, imroageId } = req.params;
   const { variantId, imageId } = req.params;
-  console.log(variantId, imageId, "id hai ta ");
 
   try {
     // Find the product by ID
 
     const productvariantImage = await ProductImage.findOne({ _id: variantId });
-    console.log(productvariantImage, "product found");
 
     if (!productvariantImage) {
       return res.status(404).json({ error: "Product color variant not found" });
@@ -350,7 +332,6 @@ exports.deleteProductColorVariantImages = async (req, res, next) => {
     const imageIndex = productvariantImage.coloredImage.findIndex(
       (img) => img == imageId
     );
-    console.log(imageIndex, "imageindex");
 
     if (imageIndex === -1) {
       return res

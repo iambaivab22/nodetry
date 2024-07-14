@@ -40,12 +40,14 @@ exports.createOrder = async (req, res) => {
 
 exports.getOrderedProductList = async (req, res) => {
   try {
-    const ordersList = await Orders.find().populate({
-      path: "products.productId",
-      populate: {
-        path: "images",
-      },
-    });
+    const ordersList = await Orders.find()
+      .populate({
+        path: "products.productId",
+      })
+      .populate({
+        path: "userId",
+      });
+
     res
       .status(201)
       .json({ data: ordersList, success: "successfully Got Orders" });

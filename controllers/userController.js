@@ -115,6 +115,7 @@ exports.registerUser = async (req, res) => {
 };
 
 exports.loginUser = async (req, res) => {
+  console.log("hello datas");
   try {
     const { email, password } = req.body;
     const user = await User.findOne({ email });
@@ -122,22 +123,22 @@ exports.loginUser = async (req, res) => {
     if (!user) {
       return res.status(401).json({ message: "Invalid email or password." });
     }
-
+    console.log(user.password, password, "password hitted");
     const isPasswordValid = await bcrypt.compare(password, user.password);
     if (!isPasswordValid) {
-      return res.status(401).json({ message: "Invalid email or password." });
+      return res
+        .status(401)
+        .json({ message: "Invalid email or password hai." });
     }
     const token = jwt.sign({ userId: user._id }, "4Kq#W%L9gT!z7&$xP@jR");
     let userRoles = "";
 
-    if (email === "meromail123@gmail.com" && password === "123456783") {
-      console.log("admin");
-      userRoles = "ADMIN";
-    } else {
-      userRoles = "USER";
-      console.log("non admin");
-    }
-    console.log("userRoles", userRoles, "role");
+    // if (email === "meromail123@gmail.com" && password === "123456783") {
+    //   console.log("admin");
+    //   userRoles = "ADMIN";
+    // } else {
+    //   userRoles = "USER";
+    // }
 
     res.json({ token, user: user, userRoles: userRoles });
   } catch (error) {

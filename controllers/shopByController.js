@@ -3,7 +3,7 @@ const ShopByBudget = require("../modals/shopByBudget.modal.js");
 exports.createShopByBudget = async (req, res, next) => {
   try {
     const { name } = req.body;
-    console.log(name, "name");
+
     // Create a new document using the ShopByBudget model
     const newShopByBudget = new ShopByBudget({ name });
 

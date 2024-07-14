@@ -30,8 +30,6 @@ exports.createTestimonial = async (req, res, next) => {
 
     const fileNames = req.files.map((file) => file.filename);
 
-    console.log(fileNames, "fileNames hai ta");
-
     // console.log(datas, "from Test");
 
     const testimonial = new Testimonial({
@@ -74,7 +72,6 @@ exports.deleteTestimonial = async (req, res, next) => {
 
 exports.getTestimonialDetailsById = async (req, res, next) => {
   try {
-    console.log(req.params.testimonialId, "id");
     const testimonialId = req.params.testimonialId;
     const tesimonialDetails = await Testimonial.findById(testimonialId);
     // console.log(subCategoryDetails, "subCategorydetails");

@@ -57,10 +57,12 @@ app.use("/api", testimonialRouter);
 app.use("/api", shopByBudgetRouter);
 app.use("/api", ordersRouter);
 
+console.log("hello main");
+
 app.get("/", (req, res) => {
   res.send("products api running new deploy");
 });
 
 app.listen(8000, () => {
-  console.log(`server initialized successfully in port no  in `);
+  console.log(`server initialized successfully in port no  in 8000`);
 });
