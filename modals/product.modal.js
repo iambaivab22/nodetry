@@ -138,7 +138,7 @@ const productSchema = new mongoose.Schema({
 const productImageSchema = new mongoose.Schema({
   colorName: String,
   coloredImage: {
-    type: [String],
+    type: String,
     required: true,
   },
 });

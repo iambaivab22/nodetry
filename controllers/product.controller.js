@@ -1,5 +1,8 @@
 const { Product, ProductImage } = require("../modals/product.modal");
 
+const fs = require("fs");
+const path = require("path");
+
 exports.createProduct = async (req, res, next) => {
   try {
     const urls = [];
@@ -104,7 +107,7 @@ exports.getAllProduct = async (req, res, next) => {
       .sort(sortOption);
 
     res
-      .status(201)
+      .status(200)
       .json({ message: "success fully get products", data: products });
     // console.log("all items find");
   } catch (err) {
@@ -116,7 +119,7 @@ exports.getAllProduct = async (req, res, next) => {
 //   const data = await Product.find()
 //     .populate("category")
 //     .populate("subCategory");
-//   res.status(201).json({ message: "success fully get products", data: data });
+//   res.status(200).json({ message: "success fully get products", data: data });
 //   console.log("all items find");
 // };
 
@@ -128,7 +131,19 @@ exports.deleteProduct = async (req, res, next) => {
     );
     // console.log(deleteProductData, "deleteproduct data");
 
-    res.status(201).json({
+    // Remove all images associated with the product
+    // const imagesToDelete = deleteProductData.images.map((img) => img.filename); // Assuming `filename` holds the file name
+
+    // imagesToDelete.forEach((filename) => {
+    //   const filePath = path.join(__dirname, "../uploads/products", filename);
+    //   fs.unlink(filePath, (err) => {
+    //     if (err) {
+    //       console.error(`Error deleting file ${filename}:`, err);
+    //     }
+    //   });
+    // });
+
+    res.status(200).json({
       message: "success fully deleted Product",
       data: deleteProductData,
     });
@@ -145,27 +160,51 @@ exports.deleteProductImages = async (req, res, next) => {
   try {
     // Find the product by ID
 
-    const product = await Product.findOne({ _id: productId });
+    const product = await Product.findOne({ _id: productId }).populate(
+      "images"
+    );
+
+    console.log(product, "product");
 
     if (!product) {
       return res.status(404).json({ error: "Product not found" });
     }
 
     // Find the image within the product's images array by its ID
-    const imageIndex = product.image.findIndex((img) => img._id == imroageId);
+    const imageIndex = product.images.findIndex((img) => img._id == imroageId);
+
+    console.log(imageIndex, "imageIndex");
 
     if (imageIndex === -1) {
       return res.status(404).json({ error: "Image not found in the product" });
     }
 
+    console.log(product.images, "product images values data");
+
     // Remove the image from the product's images array
-    const deletedImage = product.image.splice(imageIndex, 1)[0];
+    const deletedImage = product.images.splice(imageIndex, 1)[0];
+
+    //  Remove all images associated with the product
+
+    // Assuming `filename` holds the file name
+
+    imagesToDelete.forEach((filename) => {
+      const filePath = path.join(__dirname, "../uploads/products", filename);
+      fs.unlink(filePath, (err) => {
+        if (err) {
+          console.error(`Error deleting file ${filename}:`, err);
+        }
+      });
+    });
+
+    console.log(product.images, "product images guys");
+    const imagesToDelete = product.images.map((img) => img.coloredImage);
 
     // Save the modified product to update the images array in the database
     await product.save();
 
     // Delete the image from Cloudinary using its public ID
-    await cloudinary.uploader.destroy(deletedImage._id);
+    // await cloudinary.uploader.destroy(deletedImage._id);
 
     res.json({ message: "Image deleted successfully" });
   } catch (error) {
@@ -208,6 +247,8 @@ exports.updateProduct = async (req, res, next) => {
 
     // console.log(urls, videoUrl, "image and video url");
 
+    console.log("product update", req.params.productId);
+
     const product = await Product.findOne({ _id: req.params.productId });
 
     if (!product) {
@@ -227,7 +268,7 @@ exports.updateProduct = async (req, res, next) => {
       {
         name: req.body.name,
         price: req.body.price,
-        image: req.body.productVariants,
+        images: req.body.productVariants,
         video: req.files[0].filename,
         originalPrice: req.body.originalPrice,
         discountedPrice: req.body.discountedPrice,
@@ -243,7 +284,7 @@ exports.updateProduct = async (req, res, next) => {
       }
     );
 
-    res.status(201).json({
+    res.status(200).json({
       message: "success fully udpated Product",
       data: updatedProductData,
     });
@@ -264,7 +305,7 @@ exports.getProductDetailsById = async (req, res, next) => {
       return res.status(404).json({ error: "Product not found" });
     }
 
-    res.status(201).json({
+    res.status(200).json({
       message: "successfully get Product Details",
       data: productDetails,
     });
@@ -286,7 +327,7 @@ exports.productListByCategory = async (req, res, next) => {
         .json({ error: "Product not found for this category" });
     }
 
-    res.status(201).json({
+    res.status(200).json({
       message: "successfully get Products",
       data: productListByCategory,
     });
@@ -296,21 +337,34 @@ exports.productListByCategory = async (req, res, next) => {
 };
 
 exports.CreateProductImage = async (req, res, next) => {
+  console.log("hellos", req.files);
   const remappedImages = req?.files?.map((file) => file.filename);
 
+  console.log(remappedImages, req.body.colorName, "reqqqq");
+
+  const result = remappedImages.map((image, index) => ({
+    colorName: req.body.colorName[index],
+    coloredImage: image,
+  }));
+
   try {
-    const ProductImages = new ProductImage({
-      colorName: req.body.colorName,
-      coloredImage: remappedImages,
-    });
-
+    // const ProductImages = new ProductImage(result);
     // Save the banner
+    // const datas = await ProductImages.save();
+    const savedImages = [];
+    // const datas = await ProductImage.insertMany(result);
 
-    const datas = await ProductImages.save();
+    for (const item of result) {
+      const productImage = new ProductImage(item);
+      const savedImage = await productImage.save(); // Save each document one by one
+      savedImages.push(savedImage);
+    }
 
-    res.status(201).json({
+    console.log(savedImages, "savedImages list");
+
+    res.status(200).json({
       message: "successfully created productImage",
-      data: datas,
+      data: savedImages,
     });
   } catch (error) {}
 };
@@ -318,6 +372,8 @@ exports.CreateProductImage = async (req, res, next) => {
 exports.deleteProductColorVariantImages = async (req, res, next) => {
   // const { productId, imroageId } = req.params;
   const { variantId, imageId } = req.params;
+
+  console.log(variantId, imageId, "variantId, imageId");
 
   try {
     // Find the product by ID
@@ -366,6 +422,6 @@ exports.getAllProductVariantImages = async (req, res, next) => {
 
   const lastdata = data.slice(-req.params.count);
   res
-    .status(201)
+    .status(200)
     .json({ message: "success fully get Product color Variant", data: data });
 };
