@@ -73,6 +73,10 @@
 //     res.status(500).json({ message: "Login failed." });
 //   }
 // };
+// const User = require("../modals/userModal");
+
+const nodemailer = require("nodemailer");
+const crypto = require("crypto");
 const User = require("../modals/userModal");
 
 const express = require("express");
@@ -80,6 +84,14 @@ const router = express.Router();
 
 const bcrypt = require("bcrypt");
 const jwt = require("jsonwebtoken");
+
+const transporter = nodemailer.createTransport({
+  service: "Gmail", // You can change this to your email provider
+  auth: {
+    user: "baivabbidari876@gmail.com", // Replace with your email
+    pass: "djuw xkgi vbpi vwqc",
+  },
+});
 
 // Register
 exports.registerUser = async (req, res) => {
@@ -144,5 +156,51 @@ exports.loginUser = async (req, res) => {
   } catch (error) {
     console.error(error);
     res.status(500).json({ message: "Login failed." });
+  }
+};
+
+exports.forgotPassword = async (req, res) => {
+  try {
+    const { email } = req.body;
+
+    if (!email) {
+      return res.status(400).json({ message: "Please provide an email." });
+    }
+
+    const user = await User.findOne({ email });
+
+    if (!user) {
+      return res.status(404).json({ message: "User not found." });
+    }
+    // Generate a reset token
+    const resetToken = crypto.randomBytes(32).toString("hex");
+    const resetTokenHash = crypto
+      .createHash("sha256")
+      .update(resetToken)
+      .digest("hex");
+
+    // Set token and expiry on the user model
+    user.resetPasswordToken = resetTokenHash;
+    user.resetPasswordExpires = Date.now() + 3600000; // 1 hour
+
+    const resetUrl = `http://localhost:3010/#/reset-password/${resetToken}`;
+
+    const mailOptions = {
+      from: "baivabbidari876@gmail.com",
+      to: user.email,
+      subject: "Password Reset Request",
+      text: `You requested a password reset. Click the link to reset your password: ${resetUrl}. If you didn't request this, ignore this email.`,
+    };
+
+    await transporter.sendMail(mailOptions);
+
+    res.status(200).json({
+      message: "Password reset email sent. Please check your inbox.",
+    });
+  } catch (error) {
+    console.error(error);
+    res
+      .status(500)
+      .json({ message: "Failed to process forgot password request." });
   }
 };
