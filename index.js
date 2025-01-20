@@ -39,6 +39,7 @@ const cartRouter = require("./routes/cartRoutes");
 const testimonialRouter = require("./routes/testimonialRoutes");
 const shopByBudgetRouter = require("./routes/shopByBudget.routes");
 const ordersRouter = require("./routes/orders.routes");
+const socialItemRouter = require("./routes/socialItem.routes");
 
 console.log(process.env.PORT, "port number");
 
@@ -56,6 +57,7 @@ app.use("/api", cartRouter);
 app.use("/api", testimonialRouter);
 app.use("/api", shopByBudgetRouter);
 app.use("/api", ordersRouter);
+app.use("/api", socialItemRouter);
 
 console.log("hello main");
 
