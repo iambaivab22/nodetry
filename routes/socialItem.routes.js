@@ -4,6 +4,7 @@ const {
   getSocialLinks,
   updateSocialLinks,
   deletesocialLinks,
+  getSocialItemById,
 } = require("../controllers/socialItem.controller");
 
 // const {
@@ -18,6 +19,7 @@ router.post("/socialLinks", createSocialLinks);
 router.get("/socialLinks", getSocialLinks);
 router.put("/socialLinks/:id", updateSocialLinks);
 router.delete("/socialLinks:id", deletesocialLinks);
+router.get("/socialLinks/:id", getSocialItemById);
 
 // module.exports = router;
 // const express = require("express");

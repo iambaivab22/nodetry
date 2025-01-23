@@ -1,6 +1,8 @@
 // const { SocialItems } = require("../modals/socialLInks.modal");
 
-const { SocialLinks } = require("../modals/SocialItems.modal");
+// const { SocialLinks } = require("../modals/SocialItems.modal");
+
+const { SocialLinks } = require("../modals/socialItems.modal");
 exports.createSocialLinks = async (req, res) => {
   try {
     const newSocialLinks = new SocialLinks(req.body);
@@ -92,6 +94,31 @@ exports.updateSocialLinks = async (req, res) => {
     res.status(500).json({
       success: false,
       message: "Error updating content",
+      error: error.message,
+    });
+  }
+};
+
+exports.getSocialItemById = async (req, res) => {
+  try {
+    const socialItem = await SocialLinks.findById(req.params.id);
+
+    if (!socialItem) {
+      return res.status(404).json({
+        success: false,
+        message: "Social link not found",
+      });
+    }
+
+    res.status(200).json({
+      success: true,
+      message: "Social link retrieved successfully",
+      data: socialItem,
+    });
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      message: "Error retrieving social link",
       error: error.message,
     });
   }
