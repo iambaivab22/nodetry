@@ -43,10 +43,13 @@ exports.getOrderedProductList = async (req, res) => {
     const ordersList = await Orders.find()
       .populate({
         path: "products.productId",
+        model: "Product",
       })
       .populate({
         path: "userId",
       });
+
+    console.log(JSON.stringify(ordersList, null, 2), "values");
 
     res
       .status(201)
