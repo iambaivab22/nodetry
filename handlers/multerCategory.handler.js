@@ -3,7 +3,7 @@ const multer = require("multer");
 
 const categoryStorage = multer.diskStorage({
   destination: function (req, file, cb) {
-    cb(null, "uploads/categories");
+    cb(null, "uploads/product");
   },
   filename: function (req, file, cb) {
     cb(null, Date.now() + "-" + file.originalname);
