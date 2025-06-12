@@ -18,6 +18,11 @@ const OrderProductSchema = new mongoose.Schema({
   isInsideValley: Boolean,
   OrderedAt: String,
   shippingLocation: String,
+  productOrderId: String,
+  date: {
+    type: Date,
+    default: Date.now, // Automatically sets current date/time when a document is created
+  },
 });
 
 // const cartSchema = new mongoose.Schema({});

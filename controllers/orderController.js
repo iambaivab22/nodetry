@@ -82,3 +82,36 @@ exports.deleteSpecificCartOrder = async (req, res) => {
     res.status(500).json({ error: error.message });
   }
 };
+
+exports.getOrderDetails = async (req, res) => {
+  try {
+    const { orderId } = req.params;
+
+    const orderDetails = await Orders.findById(orderId)
+      .populate({
+        path: "products.productId",
+        model: "Product",
+        populate: {
+          path: "images",
+          model: "ProductImage",
+        },
+      })
+      .populate({
+        path: "userId",
+        model: "User",
+      });
+
+    if (!orderDetails) {
+      return res
+        .status(404)
+        .json({ error: `Order with ID ${orderId} not found` });
+    }
+
+    res.status(200).json({
+      data: orderDetails,
+      success: "Successfully retrieved order details",
+    });
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+};

@@ -277,6 +277,7 @@ exports.updateProduct = async (req, res, next) => {
         discountPercentage: req.body.discountPercentage,
         details: req.body.details,
         isNewArrivals: req.body.isNewArrivals,
+        stockQuantity: req.body.stockQuantity,
         isBestSelling: req.body.isBestSelling,
       },
       {
